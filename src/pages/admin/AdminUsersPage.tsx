@@ -3,10 +3,11 @@ import { motion } from 'framer-motion';
 import { Search, Ban, CheckCircle, XCircle, Plus } from 'lucide-react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import {
-  incrementUserBalance,
   onUsersSnapshot,
   updateUserStatus as updateUserStatusInFirestore,
   updateUserRole,
+  adminDeposit,
+  adminWithdrawal,
   type FirestoreUser,
 } from '../../services/firestoreService';
 import { useToastContext } from '../../hooks/useToastContext';
@@ -20,6 +21,7 @@ const AdminUsersPage: React.FC = () => {
   const [addAmount, setAddAmount] = useState('');
   const [addFundsError, setAddFundsError] = useState('');
   const [isAddingFunds, setIsAddingFunds] = useState(false);
+  const [transactionType, setTransactionType] = useState<'deposit' | 'withdrawal'>('deposit');
   const { pushToast } = useToastContext();
 
   useEffect(() => {
@@ -69,13 +71,19 @@ const AdminUsersPage: React.FC = () => {
 
     setIsAddingFunds(true);
     try {
-      await incrementUserBalance(selectedUser.uid, amount);
-      pushToast(`Added $${amount.toLocaleString()} to ${selectedUser.fullName}`, 'success');
+      if (transactionType === 'deposit') {
+        await adminDeposit(selectedUser.uid, selectedUser.email, selectedUser.fullName, amount);
+        pushToast(`Deposited $${amount.toLocaleString()} to ${selectedUser.fullName}`, 'success');
+      } else {
+        await adminWithdrawal(selectedUser.uid, selectedUser.email, selectedUser.fullName, amount);
+        pushToast(`Withdrew $${amount.toLocaleString()} from ${selectedUser.fullName}`, 'success');
+      }
       setSelectedUser(null);
       setAddAmount('');
+      setTransactionType('deposit');
     } catch (err) {
-      console.error('Failed to add funds:', err);
-      setAddFundsError('Unable to add funds. Please try again.');
+      console.error('Failed to process transaction:', err);
+      setAddFundsError('Unable to process transaction. Please try again.');
     } finally {
       setIsAddingFunds(false);
     }
@@ -86,6 +94,7 @@ const AdminUsersPage: React.FC = () => {
     setAddAmount('');
     setAddFundsError('');
     setIsAddingFunds(false);
+    setTransactionType('deposit');
   };
 
   return (
@@ -243,15 +252,41 @@ const AdminUsersPage: React.FC = () => {
           >
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-xl font-semibold text-white">Add funds to {selectedUser.fullName}</h3>
+                <h3 className="text-xl font-semibold text-white">Manage funds for {selectedUser.fullName}</h3>
                 <p className="text-sm text-slate-400">Current balance: ${selectedUser.balance?.toLocaleString() ?? 0}</p>
               </div>
               <button onClick={closeAddFundsModal} className="text-slate-400 hover:text-white">
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
+            <div className="mb-4">
+              <div className="flex rounded-lg bg-slate-800 p-1">
+                <button
+                  onClick={() => setTransactionType('deposit')}
+                  className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                    transactionType === 'deposit'
+                      ? 'bg-emerald-500 text-white'
+                      : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Deposit
+                </button>
+                <button
+                  onClick={() => setTransactionType('withdrawal')}
+                  className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                    transactionType === 'withdrawal'
+                      ? 'bg-red-500 text-white'
+                      : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Withdrawal
+                </button>
+              </div>
+            </div>
             <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-300">Amount to add</label>
+              <label className="block text-sm font-medium text-gray-300">
+                Amount to {transactionType === 'deposit' ? 'deposit' : 'withdraw'}
+              </label>
               <input
                 type="number"
                 min="1"
@@ -266,9 +301,18 @@ const AdminUsersPage: React.FC = () => {
                 <button
                   onClick={handleAddFunds}
                   disabled={isAddingFunds}
-                  className="flex-1 rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+                  className={`flex-1 rounded-2xl px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60 ${
+                    transactionType === 'deposit'
+                      ? 'bg-emerald-500 hover:bg-emerald-400'
+                      : 'bg-red-500 hover:bg-red-400'
+                  }`}
                 >
-                  {isAddingFunds ? 'Adding...' : 'Add Funds'}
+                  {isAddingFunds
+                    ? 'Processing...'
+                    : transactionType === 'deposit'
+                    ? 'Deposit Funds'
+                    : 'Withdraw Funds'
+                  }
                 </button>
                 <button
                   onClick={closeAddFundsModal}

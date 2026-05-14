@@ -8,7 +8,7 @@ const PrivacyPage: React.FC = () => (
       <Card className="max-w-3xl w-full">
         <h1 className="text-3xl font-semibold text-white mb-4">Privacy Policy</h1>
         <p className="text-gray-400 leading-7">
-          TradePro respects your privacy. We only store information needed to keep your trading account secure and optimized.
+          Opticore Markets respects your privacy. We only store information needed to keep your trading account secure and optimized.
         </p>
         <div className="mt-6 space-y-4 text-gray-300">
           <p>We do not sell or share your personal data with third parties without consent.</p>

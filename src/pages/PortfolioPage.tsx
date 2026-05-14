@@ -1,9 +1,14 @@
-﻿import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, Search, Sparkles } from 'lucide-react';
+import { CheckCircle, Search, Sparkles, Plus, Minus } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { useInvestments } from '../hooks/useInvestments';
+import { useAuth } from '../hooks/useAuth';
+import { onUserTransactionsSnapshot, createDepositRequest, createWithdrawalRequest, type TransactionRecord } from '../services/firestoreService';
+import { useToastContext } from '../hooks/useToastContext';
 import Modal from '../components/Modal';
+import DepositModal from '../components/DepositModal';
+import WithdrawalModal from '../components/WithdrawalModal';
 import type { InvestmentPlanConfig } from '../types/investment';
 
 const PortfolioPage: React.FC = () => {
@@ -16,10 +21,29 @@ const PortfolioPage: React.FC = () => {
     processing,
     investInPlan,
   } = useInvestments();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlan, setSelectedPlan] = useState<InvestmentPlanConfig | null>(null);
   const [investmentAmount, setInvestmentAmount] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+  const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
+  const { pushToast } = useToastContext();
+
+  useEffect(() => {
+    if (!user?.uid) {
+      setTransactions([]);
+      return;
+    }
+
+    const unsubscribe = onUserTransactionsSnapshot(user.uid, (snapshot) => {
+      const userTransactions = snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Omit<TransactionRecord, 'id'>) }));
+      setTransactions(userTransactions);
+    });
+
+    return () => unsubscribe();
+  }, [user?.uid]);
 
   const userBalance = useMemo(() => {
     return userRecord?.balance ?? 0;
@@ -32,16 +56,55 @@ const PortfolioPage: React.FC = () => {
     return { active, totalProfit, totalAmount };
   }, [activeInvestments]);
 
-  const filteredPlans = plans.filter(
-    (plan) =>
-      plan.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      plan.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredPlans = plans.filter((plan) => {
+    const name = plan.name ? plan.name.toString().toLowerCase() : '';
+    const description = plan.description ? plan.description.toString().toLowerCase() : '';
+    const query = searchTerm.toLowerCase();
+    return name.includes(query) || description.includes(query);
+  });
 
   const handleOpenModal = (plan: InvestmentPlanConfig) => {
     setSelectedPlan(plan);
     setInvestmentAmount('');
     setIsModalOpen(true);
+  };
+
+  const handleWithdrawRequest = async (amount: number, walletAddress: string) => {
+    if (!user?.uid || !user.email) {
+      pushToast('Please log in to submit withdrawal requests.', 'error');
+      return;
+    }
+
+    const userName = userRecord?.fullName || user.displayName || 'User';
+
+    try {
+      await createWithdrawalRequest(user.uid, user.email, userName, amount, 'BTC', walletAddress);
+      pushToast('Withdrawal request submitted successfully.', 'success');
+      setIsWithdrawalModalOpen(false);
+    } catch (err) {
+      console.error('Failed to submit withdrawal request:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      pushToast(`Unable to submit withdrawal request: ${errorMessage}`, 'error');
+    }
+  };
+
+  const handleDepositRequest = async (amount: number) => {
+    if (!user?.uid || !user.email) {
+      pushToast('Please log in to submit deposit requests.', 'error');
+      return;
+    }
+
+    const userName = userRecord?.fullName || user.displayName || 'User';
+
+    try {
+      await createDepositRequest(user.uid, user.email, userName, amount, 'BTC');
+      pushToast('Deposit request submitted successfully.', 'success');
+      setIsDepositModalOpen(false);
+    } catch (err) {
+      console.error('Failed to submit deposit request:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      pushToast(`Unable to submit deposit request: ${errorMessage}`, 'error');
+    }
   };
 
   const handleSubmitInvestment = async () => {
@@ -68,6 +131,22 @@ const PortfolioPage: React.FC = () => {
           <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 shadow-xl border border-white/10">
             <p className="text-sm uppercase tracking-[0.32em] text-blue-300 mb-3">Available Balance</p>
             <p className="text-4xl font-bold text-white">${userBalance.toLocaleString()}</p>
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => setIsDepositModalOpen(true)}
+                className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 px-3 py-2 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/30 transition"
+              >
+                <Plus className="w-4 h-4" />
+                Deposit
+              </button>
+              <button
+                onClick={() => setIsWithdrawalModalOpen(true)}
+                className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-rose-500/20 border border-rose-500/30 px-3 py-2 text-sm font-semibold text-rose-300 hover:bg-rose-500/30 transition"
+              >
+                <Minus className="w-4 h-4" />
+                Withdraw
+              </button>
+            </div>
           </div>
           <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 shadow-xl border border-white/10">
             <p className="text-sm uppercase tracking-[0.32em] text-blue-300 mb-3">Active Investments</p>
@@ -183,6 +262,31 @@ const PortfolioPage: React.FC = () => {
           </div>
         </div>
 
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold text-white">Transaction History</h2>
+            <span className="text-xs text-slate-500">All activities</span>
+          </div>
+          <div className="rounded-3xl border border-white/10 bg-slate-950/80 p-6 shadow-xl">
+            <div className="space-y-3">
+              {transactions.length === 0 ? (
+                <div className="rounded-3xl bg-slate-900/80 p-4 text-sm text-slate-400">No transactions yet.</div>
+              ) : (
+                transactions.slice(0, 10).map((transaction) => (
+                  <div key={transaction.id} className="rounded-3xl bg-slate-900/80 p-4 border border-white/10">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium text-white">{transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}</p>
+                      <span className={`text-sm ${transaction.type === 'deposit' ? 'text-emerald-400' : transaction.type === 'withdrawal' ? 'text-rose-400' : 'text-blue-400'}`}>{transaction.status}</span>
+                    </div>
+                    <p className="mt-1 text-sm text-slate-400">${transaction.amount.toLocaleString()} · {transaction.asset} · {transaction.createdAt?.toDate?.()?.toLocaleDateString()}</p>
+                    {transaction.note && <p className="mt-1 text-xs text-slate-500">{transaction.note}</p>}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="rounded-3xl border border-white/10 bg-slate-950/80 p-6 shadow-xl">
           <div className="flex items-center gap-3 mb-4 text-gray-300">
             <Sparkles className="w-5 h-5 text-blue-400" />
@@ -236,6 +340,20 @@ const PortfolioPage: React.FC = () => {
           <p className="text-gray-400">Select a plan to continue.</p>
         )}
       </Modal>
+
+      <DepositModal
+        isOpen={isDepositModalOpen}
+        onClose={() => setIsDepositModalOpen(false)}
+        bitcoinAddress="bc1qyqgl7jevyxar2h6q5xv99qsnlh2knnak8vumzg"
+        onRequestDeposit={handleDepositRequest}
+      />
+
+      <WithdrawalModal
+        isOpen={isWithdrawalModalOpen}
+        onClose={() => setIsWithdrawalModalOpen(false)}
+        onSubmit={handleWithdrawRequest}
+        maxAmount={userBalance}
+      />
     </DashboardLayout>
   );
 };

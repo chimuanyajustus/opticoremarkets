@@ -81,7 +81,6 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, bitcoinAdd
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
         className="relative w-full max-w-md rounded-3xl border border-white/10 bg-slate-900 p-8 shadow-2xl"
       >
         <button
@@ -177,3 +176,4 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, bitcoinAdd
 };
 
 export default DepositModal;
+

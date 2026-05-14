@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import PageLoadingOverlay from './PageLoadingOverlay';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -11,15 +12,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const location = useLocation();
 
   if (loading) {
-    return <div>Loading...</div>; // Or a proper loading component
+    return <PageLoadingOverlay isVisible={true} />;
   }
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // In development, skip email verification check to allow testing
-  // In production, uncomment the verification check below
+  // In production, check email verification
   if (import.meta.env.PROD && !user.emailVerified) {
     return <Navigate to="/verify-email" replace />;
   }
@@ -28,3 +28,4 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 };
 
 export default ProtectedRoute;
+

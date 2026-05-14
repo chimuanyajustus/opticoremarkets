@@ -4,7 +4,7 @@ export interface AuthData {
   token: string;
 }
 
-const AUTH_STORAGE_KEY = 'tradeproAuth';
+const AUTH_STORAGE_KEY = 'opticoreMarketsAuth';
 
 export const getStoredAuth = (): AuthData | null => {
   if (typeof window === 'undefined') return null;

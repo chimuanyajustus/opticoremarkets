@@ -1,20 +1,20 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import PageLoadingOverlay from './PageLoadingOverlay';
 
 interface AdminRouteProps {
   children: React.ReactNode;
 }
 
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading, profileLoading } = useAuth();
 
-  if (loading) {
-    return <div>Loading...</div>;
+  if (loading || profileLoading) {
+    return <PageLoadingOverlay isVisible={true} />;
   }
 
-  // In development, allow admin access for the configured admin email
-  // Remove this condition in production and rely only on Firestore role
+  // Development: allow specific dev admin email
   const isDevAdmin = import.meta.env.PROD === false && user?.email === 'chimuanyaatugwu@gmail.com';
 
   if (!user || (!isAdmin && !isDevAdmin)) {

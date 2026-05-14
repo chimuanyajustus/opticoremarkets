@@ -23,15 +23,22 @@ export const useInvestments = () => {
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onInvestmentPlansSnapshot((snapshot) => {
-      if (snapshot.empty) {
+    const unsubscribe = onInvestmentPlansSnapshot(
+      (snapshot) => {
+        if (snapshot.empty) {
+          setPlans(defaultInvestmentPlans);
+        } else {
+          const fetchedPlans = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as InvestmentPlanConfig[];
+          setPlans(fetchedPlans.sort((a, b) => a.name.localeCompare(b.name)));
+        }
+        setLoadingPlans(false);
+      },
+      (error) => {
+        console.error('Investment plans snapshot failed:', error);
         setPlans(defaultInvestmentPlans);
-      } else {
-        const fetchedPlans = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as InvestmentPlanConfig[];
-        setPlans(fetchedPlans.sort((a, b) => a.name.localeCompare(b.name)));
+        setLoadingPlans(false);
       }
-      setLoadingPlans(false);
-    });
+    );
 
     return () => unsubscribe();
   }, []);
@@ -46,15 +53,30 @@ export const useInvestments = () => {
       return;
     }
 
-    const unsubscribeInvestments = onUserInvestmentsSnapshot(user.uid, (snapshot) => {
-      const investments = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as UserInvestment[];
-      setUserInvestments(investments);
-      setLoadingInvestments(false);
-    });
+    const unsubscribeInvestments = onUserInvestmentsSnapshot(
+      user.uid,
+      (snapshot) => {
+        const investments = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as UserInvestment[];
+        setUserInvestments(investments);
+        setLoadingInvestments(false);
+      },
+      (error) => {
+        console.error('User investments snapshot failed:', error);
+        setUserInvestments([]);
+        setLoadingInvestments(false);
+      }
+    );
 
-    const unsubscribeUserRecord = onUserSnapshot(user.uid, (snapshot) => {
-      setUserRecord(snapshot.exists() ? (snapshot.data() as FirestoreUser) : null);
-    });
+    const unsubscribeUserRecord = onUserSnapshot(
+      user.uid,
+      (snapshot) => {
+        setUserRecord(snapshot.exists() ? (snapshot.data() as FirestoreUser) : null);
+      },
+      (error) => {
+        console.error('User record snapshot failed:', error);
+        setUserRecord(null);
+      }
+    );
 
     return () => {
       unsubscribeInvestments();
@@ -91,7 +113,11 @@ export const useInvestments = () => {
   };
 
   const activeInvestments = useMemo(
-    () => userInvestments.filter((investment) => investment.status === 'active'),
+    () => userInvestments.filter((investment) => {
+      if (investment.status !== 'active') return false;
+      if (!investment.expiresAt) return true;
+      return investment.expiresAt.toMillis() > Date.now();
+    }),
     [userInvestments]
   );
 

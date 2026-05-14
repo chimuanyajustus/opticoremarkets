@@ -8,10 +8,10 @@ const TermsPage: React.FC = () => (
       <Card className="max-w-3xl w-full">
         <h1 className="text-3xl font-semibold text-white mb-4">Terms of Service</h1>
         <p className="text-gray-400 leading-7">
-          Read our terms and conditions to understand how TradePro keeps your account safe and connected.
+          Read our terms and conditions to understand how Opticore Markets keeps your account safe and connected.
         </p>
         <div className="mt-6 space-y-4 text-gray-300">
-          <p>By using TradePro, you agree that your account data and interaction history are protected by our policies.</p>
+          <p>By using Opticore Markets, you agree that your account data and interaction history are protected by our policies.</p>
           <p>Keep your login secure, use strong passwords, and contact support if you suspect unauthorized access.</p>
         </div>
       </Card>

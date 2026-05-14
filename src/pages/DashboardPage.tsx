@@ -14,7 +14,7 @@ import {
   createDepositRequest,
   createWithdrawalRequest,
   onUserSnapshot,
-  onTransactionsSnapshot,
+  onUserTransactionsSnapshot,
   type FirestoreUser,
   type TransactionRecord,
 } from '../services/firestoreService';
@@ -28,7 +28,7 @@ const DashboardPage: React.FC = () => {
   const [error, setError] = useState('');
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { pushToast } = useToastContext();
 
   const BITCOIN_ADDRESS = 'bc1qyqgl7jevyxar2h6q5xv99qsnlh2knnak8vumzg';
@@ -76,10 +76,9 @@ const DashboardPage: React.FC = () => {
       setUserData(snapshot.exists() ? (snapshot.data() as FirestoreUser) : null);
     });
 
-    const unsubscribeTransactions = onTransactionsSnapshot((snapshot) => {
+    const unsubscribeTransactions = onUserTransactionsSnapshot(user.uid, (snapshot) => {
       const userTransactions = snapshot.docs
-        .map((doc) => ({ id: doc.id, ...(doc.data() as Omit<TransactionRecord, 'id'>) }))
-        .filter((tx) => tx.uid === user.uid) as TransactionRecord[];
+        .map((doc) => ({ id: doc.id, ...(doc.data() as Omit<TransactionRecord, 'id'>) }));
       setTransactions(userTransactions);
     });
 
@@ -106,7 +105,8 @@ const DashboardPage: React.FC = () => {
       setIsWithdrawalModalOpen(false);
     } catch (err) {
       console.error('Failed to submit withdrawal request:', err);
-      pushToast('Unable to submit withdrawal request. Try again later.', 'error');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      pushToast(`Unable to submit withdrawal request: ${errorMessage}`, 'error');
     }
   };
 
@@ -124,7 +124,8 @@ const DashboardPage: React.FC = () => {
       setIsDepositModalOpen(false);
     } catch (err) {
       console.error('Failed to submit deposit request:', err);
-      pushToast('Unable to submit deposit request. Try again later.', 'error');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      pushToast(`Unable to submit deposit request: ${errorMessage}`, 'error');
     }
   };
 
@@ -156,14 +157,16 @@ const DashboardPage: React.FC = () => {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setIsDepositModalOpen(true)}
-                    className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 px-4 py-3 font-medium transition-colors border border-emerald-500/30"
+                    disabled={authLoading || !user}
+                    className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 px-4 py-3 font-medium transition-colors border border-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Plus size={18} />
                     Deposit
                   </button>
                   <button
                     onClick={() => setIsWithdrawalModalOpen(true)}
-                    className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 px-4 py-3 font-medium transition-colors border border-rose-500/30"
+                    disabled={authLoading || !user}
+                    className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 px-4 py-3 font-medium transition-colors border border-rose-500/30 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Minus size={18} />
                     Withdraw
@@ -342,18 +345,20 @@ const DashboardPage: React.FC = () => {
 
         {error && <div className="rounded-3xl bg-rose-500/10 border border-rose-400/20 p-4 text-sm text-rose-200">{error}</div>}
       </motion.div>
-      <DepositModal
-        isOpen={isDepositModalOpen}
-        onClose={() => setIsDepositModalOpen(false)}
-        bitcoinAddress={BITCOIN_ADDRESS}
-        onRequestDeposit={handleDepositRequest}
-      />
-      <WithdrawalModal
-        isOpen={isWithdrawalModalOpen}
-        onClose={() => setIsWithdrawalModalOpen(false)}
-        onSubmit={handleWithdrawRequest}
-        maxAmount={userData?.balance ?? 0}
-      />
+      <div className="modal-container">
+        <DepositModal
+          isOpen={isDepositModalOpen}
+          onClose={() => setIsDepositModalOpen(false)}
+          bitcoinAddress={BITCOIN_ADDRESS}
+          onRequestDeposit={handleDepositRequest}
+        />
+        <WithdrawalModal
+          isOpen={isWithdrawalModalOpen}
+          onClose={() => setIsWithdrawalModalOpen(false)}
+          onSubmit={handleWithdrawRequest}
+          maxAmount={userData?.balance ?? 0}
+        />
+      </div>
     </DashboardLayout>
   );
 };

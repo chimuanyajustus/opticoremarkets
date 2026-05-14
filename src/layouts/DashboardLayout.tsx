@@ -148,7 +148,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <div
           className="fixed inset-0 z-40 bg-black bg-opacity-50 md:hidden"
           onClick={() => setSidebarOpen(false)}
-        ></div>
+        />
       )}
     </div>
   );

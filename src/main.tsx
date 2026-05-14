@@ -1,16 +1,23 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App.tsx'
-import { AuthProvider } from './context/AuthContext.tsx'
-import { ToastProvider } from './components/ToastProvider.tsx'
+import { AuthProvider } from './context/AuthContext'
+import { ToastProvider } from './components/ToastProvider'
+import App from './App'
 
-createRoot(document.getElementById('root')!).render(
+const rootElement = document.getElementById('root')
+
+if (!rootElement) {
+  throw new Error('Root element not found in HTML')
+}
+
+createRoot(rootElement).render(
   <StrictMode>
-    <ToastProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <ToastProvider>
         <App />
-      </AuthProvider>
-    </ToastProvider>
+      </ToastProvider>
+    </AuthProvider>
   </StrictMode>,
 )
+

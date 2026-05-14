@@ -7,7 +7,7 @@ import {
   onUsersSnapshot,
   onDepositRequestsSnapshot,
   onWithdrawalRequestsSnapshot,
-  onTransactionsSnapshot,
+  onAllInvestmentsSnapshot,
   approveDepositRequest,
   rejectDepositRequest,
   approveWithdrawalRequest,
@@ -75,7 +75,7 @@ const AdminDashboardPage: React.FC = () => {
       const pendingWithdrawals = snapshot.docs.filter(doc => doc.data().status === 'pending');
       mergeNotifications(pendingWithdrawals.map(doc => ({
         id: doc.id,
-        message: `New withdrawal request of ${doc.data().amount} ${doc.data().asset} from ${doc.data().userEmail}`,
+        message: `New withdrawal request of ${doc.data().amount} ${doc.data().network} from ${doc.data().userEmail}`,
         type: 'withdrawal',
         read: false,
       })));
@@ -119,10 +119,10 @@ const AdminDashboardPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = onTransactionsSnapshot((snapshot) => {
+    const unsubscribe = onAllInvestmentsSnapshot((snapshot) => {
       const activeTrades = snapshot.docs.filter(doc => {
         const data = doc.data();
-        return data.type === 'trade' && data.status === 'completed';
+        return data.status === 'active';
       }).length;
 
       setStats(prev => ({
@@ -136,7 +136,7 @@ const AdminDashboardPage: React.FC = () => {
 
   const handleApproveDeposit = async (deposit: DepositRequest) => {
     try {
-      await approveDepositRequest(deposit.id, deposit.amount, deposit.uid, deposit.userEmail, deposit.userName, deposit.asset);
+      await approveDepositRequest(deposit.id, deposit.amount, deposit.userId, deposit.userEmail, deposit.userName, deposit.asset);
     } catch (error) {
       console.error('Failed to approve deposit request:', error);
     }
@@ -152,15 +152,15 @@ const AdminDashboardPage: React.FC = () => {
 
   const handleApproveWithdrawal = async (withdrawal: WithdrawalRequest) => {
     try {
-      await approveWithdrawalRequest(withdrawal.id, withdrawal.amount, withdrawal.uid, withdrawal.userEmail, withdrawal.userName, withdrawal.asset);
+      await approveWithdrawalRequest(withdrawal.id, withdrawal.amount, withdrawal.userId, withdrawal.userEmail, withdrawal.userName, withdrawal.network);
     } catch (error) {
       console.error('Failed to approve withdrawal request:', error);
     }
   };
 
-  const handleRejectWithdrawal = async (id: string) => {
+  const handleRejectWithdrawal = async (withdrawal: WithdrawalRequest) => {
     try {
-      await rejectWithdrawalRequest(id);
+      await rejectWithdrawalRequest(withdrawal.id, withdrawal.userId, withdrawal.transactionId);
     } catch (error) {
       console.error('Failed to reject withdrawal request:', error);
     }
@@ -301,11 +301,11 @@ const AdminDashboardPage: React.FC = () => {
                 <div key={deposit.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
                   <div className="flex items-center">
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                      {deposit.asset[0]}
+                      {(deposit.asset || 'A')[0]}
                     </div>
                     <div>
                       <p className="text-white font-medium">{deposit.userEmail}</p>
-                      <p className="text-gray-400 text-sm">{deposit.asset} • {deposit.amount} {deposit.asset}</p>
+                      <p className="text-gray-400 text-sm">{deposit.asset || 'N/A'} • {deposit.amount} {deposit.asset || 'N/A'}</p>
                     </div>
                   </div>
 
@@ -323,7 +323,7 @@ const AdminDashboardPage: React.FC = () => {
                       >
                         {deposit.status === 'approved' && <CheckCircle className="w-3 h-3" />}
                         {deposit.status === 'rejected' && <XCircle className="w-3 h-3" />}
-                        {deposit.status.charAt(0).toUpperCase() + deposit.status.slice(1)}
+                        {(deposit.status || 'pending').charAt(0).toUpperCase() + (deposit.status || 'pending').slice(1)}
                       </span>
                     </div>
 
@@ -367,11 +367,11 @@ const AdminDashboardPage: React.FC = () => {
                 <div key={withdrawal.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
                   <div className="flex items-center">
                     <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                      {withdrawal.asset[0]}
+                      {(withdrawal.asset || 'W')[0]}
                     </div>
                     <div>
                       <p className="text-white font-medium">{withdrawal.userEmail}</p>
-                      <p className="text-gray-400 text-sm">{withdrawal.asset} • {withdrawal.amount} {withdrawal.asset}</p>
+                      <p className="text-gray-400 text-sm">{withdrawal.asset || 'N/A'} • {withdrawal.amount} {withdrawal.asset || 'N/A'}</p>
                       {withdrawal.walletAddress && (
                         <p className="mt-1 text-xs text-slate-400 break-all">{withdrawal.walletAddress}</p>
                       )}
@@ -392,7 +392,7 @@ const AdminDashboardPage: React.FC = () => {
                       >
                         {withdrawal.status === 'approved' && <CheckCircle className="w-3 h-3" />}
                         {withdrawal.status === 'rejected' && <XCircle className="w-3 h-3" />}
-                        {withdrawal.status.charAt(0).toUpperCase() + withdrawal.status.slice(1)}
+                        {(withdrawal.status || 'pending').charAt(0).toUpperCase() + (withdrawal.status || 'pending').slice(1)}
                       </span>
                     </div>
 
@@ -405,7 +405,7 @@ const AdminDashboardPage: React.FC = () => {
                           Approve
                         </button>
                         <button
-                          onClick={() => handleRejectWithdrawal(withdrawal.id)}
+                          onClick={() => handleRejectWithdrawal(withdrawal)}
                           className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1 rounded"
                         >
                           Reject

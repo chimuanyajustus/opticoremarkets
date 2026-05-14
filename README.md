@@ -1,4 +1,4 @@
-# TradePro - Modern Fintech Trading Platform
+# Opticore Markets - Modern Fintech Trading Platform
 
 A modern, responsive fintech/trading platform frontend built with React, Vite, and Tailwind CSS. Features a professional dark UI with smooth animations and glassmorphism design.
 

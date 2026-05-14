@@ -1,70 +1,156 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users collection - only authenticated users can read their own data
-    // Admins can read/write all user data
+
+    // Helper function to check admin role
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // =========================
+    // USERS
+    // =========================
     match /users/{userId} {
-      allow read, write: if request.auth != null &&
-        (request.auth.uid == userId ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
 
-      // Allow user creation during registration
-      allow create: if request.auth != null;
-    }
-
-    // Deposit requests - only the user who made the request can read it
-    // Admins can read/write all deposit requests
-    match /depositRequests/{requestId} {
-      allow read, write: if request.auth != null &&
-        (resource.data.userId == request.auth.uid ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-    }
-
-    // Withdrawal requests - only the user who made the request can read it
-    // Admins can read/write all withdrawal requests
-    match /withdrawalRequests/{requestId} {
-      allow read, write: if request.auth != null &&
-        (resource.data.userId == request.auth.uid ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-    }
-
-    // Transactions - users can read their own transactions
-    // Admins can read all transactions
-    match /transactions/{transactionId} {
-      allow read: if request.auth != null &&
-        (resource.data.userId == request.auth.uid ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-      allow write: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // Investment plan configurations - readable by all authenticated users
-    // writable only by admins
-    match /investmentPlans/{planId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // User investments
-    match /investments/{investmentId} {
-      allow read: if request.auth != null &&
-        (resource.data.userId == request.auth.uid ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
       allow create: if request.auth != null &&
-        request.auth.uid == request.resource.data.userId &&
-        request.resource.data.amount is number &&
-        request.resource.data.percentage is number &&
-        request.resource.data.amount > 0 &&
-        request.resource.data.status == 'active';
+        request.auth.uid == userId;
+
+      allow read: if request.auth != null &&
+        (request.auth.uid == userId || isAdmin());
+
       allow update: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+        (request.auth.uid == userId || isAdmin());
+
+      allow delete: if request.auth != null &&
+        isAdmin();
+
+      // =========================
+      // USER TRANSACTIONS SUBCOLLECTION
+      // =========================
+      match /transactions/{transactionId} {
+
+        // Users can read only their own transactions
+        allow read: if request.auth != null &&
+          request.auth.uid == userId;
+
+        // Users can create transactions only in their own account
+        allow create: if request.auth != null &&
+          request.auth.uid == userId;
+
+        // Prevent edits/deletes after creation
+        allow update, delete: if false;
+      }
     }
 
-    // Admin-only collections
+    // =========================
+    // DEPOSIT REQUESTS
+    // =========================
+    match /depositRequests/{requestId} {
+
+      allow create: if request.auth != null &&
+        (
+          request.resource.data.userId == request.auth.uid ||
+          request.resource.data.uid == request.auth.uid
+        );
+
+      allow read: if request.auth != null &&
+        (
+          resource.data.userId == request.auth.uid ||
+          resource.data.uid == request.auth.uid ||
+          isAdmin()
+        );
+
+      allow update, delete: if request.auth != null &&
+        isAdmin();
+    }
+
+    // =========================
+    // WITHDRAWALS
+    // =========================
+    match /withdrawals/{withdrawalId} {
+
+      allow create: if request.auth != null &&
+        (
+          request.resource.data.userId == request.auth.uid ||
+          request.resource.data.uid == request.auth.uid
+        );
+
+      allow read: if request.auth != null &&
+        (
+          resource.data.userId == request.auth.uid ||
+          resource.data.uid == request.auth.uid ||
+          isAdmin()
+        );
+
+      allow update, delete: if request.auth != null &&
+        isAdmin();
+    }
+
+    // =========================
+    // GLOBAL TRANSACTIONS
+    // =========================
+    match /transactions/{transactionId} {
+
+      allow create: if request.auth != null &&
+        (
+          request.resource.data.userId == request.auth.uid ||
+          request.resource.data.uid == request.auth.uid ||
+          isAdmin()
+        );
+
+      allow read: if request.auth != null &&
+        (
+          resource.data.userId == request.auth.uid ||
+          resource.data.uid == request.auth.uid ||
+          isAdmin()
+        );
+
+      allow update, delete: if request.auth != null &&
+        isAdmin();
+    }
+
+    // =========================
+    // INVESTMENT PLANS
+    // =========================
+    match /investmentPlans/{planId} {
+
+      // Public read access
+      allow read: if true;
+
+      // Admin only write access
+      allow write: if request.auth != null &&
+        isAdmin();
+    }
+
+    // =========================
+    // INVESTMENTS
+    // =========================
+    match /investments/{investmentId} {
+
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.userId;
+
+      allow read: if request.auth != null &&
+        (
+          resource.data.userId == request.auth.uid ||
+          isAdmin()
+        );
+
+      allow update, delete: if request.auth != null &&
+        isAdmin();
+    }
+
+    // =========================
+    // ADMIN COLLECTIONS
+    // =========================
     match /admin/{document=**} {
+
       allow read, write: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+        isAdmin();
     }
   }
 }
+
