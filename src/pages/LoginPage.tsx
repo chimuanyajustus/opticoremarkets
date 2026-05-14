@@ -50,7 +50,7 @@ const LoginPage: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <div className="min-vh-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         {/* Animated background elements */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#050610] via-[#0a0e1a] to-[#050610]" />
         

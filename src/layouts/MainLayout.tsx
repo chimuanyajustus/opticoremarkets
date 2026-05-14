@@ -21,7 +21,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-vh-screen bg-gray-900 text-white">
       {/* Navbar */}
       <nav className="fixed top-0 w-full bg-gray-900/80 backdrop-blur-md border-b border-gray-800 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -153,7 +153,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-            <p>&copy; 2024 Opticore Markets. All rights reserved.</p>
+            <p>&copy; 2026 Opticore Markets. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -4,7 +4,7 @@ import Card from '../components/Card';
 
 const PrivacyPage: React.FC = () => (
   <MainLayout>
-    <div className="min-h-screen flex items-center justify-center px-4 py-20">
+    <div className="min-vh-screen flex items-center justify-center px-4 py-20">
       <Card className="max-w-3xl w-full">
         <h1 className="text-3xl font-semibold text-white mb-4">Privacy Policy</h1>
         <p className="text-gray-400 leading-7">

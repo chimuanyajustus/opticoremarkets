@@ -1,4 +1,4 @@
-import { createHashRouter } from 'react-router-dom';
+import { createHashRouter, Navigate } from 'react-router-dom';
 import LandingPage from '../pages/LandingPage';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
@@ -166,5 +166,9 @@ export const router = createHashRouter([
         <PrivacyPage />
       </RootLayout>
     ),
+  },
+  {
+    path: '*',
+    element: <Navigate to="/" replace />,
   },
 ]);
