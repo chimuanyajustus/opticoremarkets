@@ -3,12 +3,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCQBDjr9N06eM8WQo5hjssL43tNKIsmmJY",
-  authDomain: "opticore-markets-20bba.firebaseapp.com",
-  projectId: "opticore-markets-20bba",
-  storageBucket: "opticore-markets-20bba.firebasestorage.app",
-  messagingSenderId: "758547476611",
-  appId: "1:758547476611:web:73aa43322648ad42d72bb6"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 const app = getApps().length
