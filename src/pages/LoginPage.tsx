@@ -200,6 +200,15 @@ const LoginPage: React.FC = () => {
                     Sign up
                   </Link>
                 </p>
+                {import.meta.env.DEV && (
+                  <p className="text-xs text-gray-500 mt-3">
+                    Dev admin credentials can be created at{' '}
+                    <Link to="/admin-setup" className="text-blue-400 hover:text-blue-300">
+                      /admin-setup
+                    </Link>
+                    .
+                  </p>
+                )}
               </motion.div>
             </div>
           </Card>

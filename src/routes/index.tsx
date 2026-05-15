@@ -14,6 +14,7 @@ import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import AdminUsersPage from '../pages/admin/AdminUsersPage';
 import AdminInvestmentsPage from '../pages/admin/AdminInvestmentsPage';
 import AdminAnalyticsPage from '../pages/admin/AdminAnalyticsPage';
+import AdminSetupPage from '../pages/AdminSetupPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 import AdminRoute from '../components/AdminRoute';
 import PublicRoute from '../components/PublicRoute';
@@ -140,6 +141,10 @@ export const router = createHashRouter([
             <AdminAnalyticsPage />
           </AdminRoute>
         ),
+      },
+      {
+        path: '/admin-setup',
+        element: import.meta.env.DEV ? <AdminSetupPage /> : <Navigate to="/" replace />,
       },
       {
         path: '/forgot-password',

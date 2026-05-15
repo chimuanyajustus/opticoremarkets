@@ -4,8 +4,8 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 
 const AdminSetupPage: React.FC = () => {
-  const [email, setEmail] = useState('chimuanyaatugwu@gmail.com');
-  const [password, setPassword] = useState('superman23');
+  const [email, setEmail] = useState('chinuanyaatugwu@gmai.com');
+  const [password, setPassword] = useState('superman23#');
   const [firstName, setFirstName] = useState('Admin');
   const [lastName, setLastName] = useState('User');
   const [uid, setUid] = useState('');
