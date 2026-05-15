@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import PageLoadingOverlay from './PageLoadingOverlay';
 
@@ -7,18 +8,20 @@ const NavigationLoader: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Show loading overlay when navigation starts
     setIsLoading(true);
 
-    // Hide loading overlay when the location changes (after component renders)
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 600); // Adjust timing to match animation speed
+    }, 600);
 
     return () => clearTimeout(timer);
   }, [location]);
 
-  return <PageLoadingOverlay isVisible={isLoading} />;
+  return (
+    <AnimatePresence mode="wait">
+      {isLoading && <PageLoadingOverlay key="navigation-loader" isVisible={isLoading} />}
+    </AnimatePresence>
+  );
 };
 
 export default NavigationLoader;
