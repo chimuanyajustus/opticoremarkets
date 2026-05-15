@@ -56,16 +56,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const ensureUserRecord = useCallback(async (firebaseUser: User) => {
     if (!firebaseUser) return null;
     try {
+      console.log('[AuthContext] ensureUserRecord: Fetching user record for UID:', firebaseUser.uid);
       let existingUser = await getUserById(firebaseUser.uid);
+      console.log('[AuthContext] ensureUserRecord: Existing user found:', existingUser ? 'Yes' : 'No');
+      
       if (!existingUser) {
         const fullName = firebaseUser.displayName || 'Opticore User';
         const email = firebaseUser.email || '';
+        console.log('[AuthContext] ensureUserRecord: Creating new user record for:', email);
         await createUserRecord(firebaseUser.uid, fullName, email);
         existingUser = await getUserById(firebaseUser.uid);
+        console.log('[AuthContext] ensureUserRecord: New user record created and verified:', existingUser ? 'Success' : 'Failed');
       }
+      
+      if (existingUser) {
+        console.log('[AuthContext] ensureUserRecord: User role:', existingUser.role);
+      }
+      
       return existingUser;
     } catch (error) {
-      console.error('Failed to ensure Firestore user record:', error);
+      console.error('[AuthContext] Failed to ensure Firestore user record:', error);
+      if (error instanceof Error) {
+        console.error('[AuthContext] Error details:', error.message, error.code);
+      }
       return null;
     }
   }, []);
@@ -86,7 +99,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return;
       }
 
+      console.log('[AuthContext] Auth state changed. User:', firebaseUser ? firebaseUser.email : 'null');
+
       if (!firebaseUser) {
+        console.log('[AuthContext] No Firebase user, clearing auth state');
         setUser(null);
         setIsAdmin(false);
         setLoading(false);
@@ -94,31 +110,53 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return;
       }
 
+      console.log('[AuthContext] Firebase user authenticated:', firebaseUser.email);
       setUser(firebaseUser);
       setIsAdmin(false);
       setLoading(false);
       setProfileLoading(true);
 
+      // Increase timeout for mobile networks (20 seconds)
+      const PROFILE_TIMEOUT_MS = 20000;
       profileTimeout = setTimeout(() => {
         if (!mounted) {
           return;
         }
-        console.warn('Auth profile load timed out after 10 seconds. Proceeding without a confirmed admin profile.');
+        console.warn('[AuthContext] Auth profile load timed out after', PROFILE_TIMEOUT_MS / 1000, 'seconds. Proceeding without a confirmed admin profile.');
         setProfileLoading(false);
-      }, 10000);
+      }, PROFILE_TIMEOUT_MS);
 
-      const firestoreUser = await ensureUserRecord(firebaseUser);
-      if (!mounted) {
-        return;
-      }
-      setIsAdmin(firestoreUser?.role === 'admin');
-      setProfileLoading(false);
-      if (profileTimeout) {
-        clearTimeout(profileTimeout);
-        profileTimeout = null;
+      try {
+        console.log('[AuthContext] Fetching Firestore user profile...');
+        const firestoreUser = await ensureUserRecord(firebaseUser);
+        
+        if (!mounted) {
+          console.log('[AuthContext] Component unmounted, skipping state update');
+          return;
+        }
+        
+        if (firestoreUser) {
+          const adminStatus = firestoreUser.role === 'admin';
+          console.log('[AuthContext] Firestore user profile loaded. Admin status:', adminStatus);
+          setIsAdmin(adminStatus);
+        } else {
+          console.warn('[AuthContext] Firestore user profile is null');
+          setIsAdmin(false);
+        }
+        
+        setProfileLoading(false);
+        if (profileTimeout) {
+          clearTimeout(profileTimeout);
+          profileTimeout = null;
+        }
+      } catch (profileError) {
+        console.error('[AuthContext] Error loading Firestore profile:', profileError);
+        if (mounted) {
+          setProfileLoading(false);
+        }
       }
     }, (error) => {
-      console.error('Auth state changed error:', error);
+      console.error('[AuthContext] Auth state listener error:', error);
       if (mounted) {
         setLoading(false);
         setProfileLoading(false);
@@ -135,6 +173,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [ensureUserRecord]);
 
   const login = useCallback(async (email: string, password: string) => {
+    console.log('[AuthContext] Login attempt for:', email);
     setLoading(true);
     try {
       if (!auth) {
@@ -142,11 +181,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       try {
+        console.log('[AuthContext] Signing in with Firebase...');
         const credential = await signInWithEmailAndPassword(auth, email, password);
         const firebaseUser = credential.user;
+        console.log('[AuthContext] Firebase sign-in successful. UID:', firebaseUser.uid);
+        
         await reload(firebaseUser);
+        console.log('[AuthContext] Firebase user reloaded');
 
         if (!firebaseUser.emailVerified) {
+          console.log('[AuthContext] Email not verified. Production:', import.meta.env.PROD);
           if (import.meta.env.PROD) {
             await signOut(auth);
             setUser(null);
@@ -154,15 +198,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         }
 
+        console.log('[AuthContext] Fetching Firestore user data...');
         const firestoreUser = await getUserById(firebaseUser.uid);
+        console.log('[AuthContext] Firestore user data:', firestoreUser ? { uid: firestoreUser.uid, email: firestoreUser.email, role: firestoreUser.role } : 'null');
+        
         setUser(firebaseUser);
-        setIsAdmin(firestoreUser?.role === 'admin');
+        const isAdminUser = firestoreUser?.role === 'admin';
+        setIsAdmin(isAdminUser);
+        console.log('[AuthContext] Login successful. Admin:', isAdminUser);
       } catch (firebaseError: unknown) {
         // Handle Firebase-specific errors with user-friendly messages
         let errorMessage = 'Login failed. Please try again.';
+        const errorCode = (firebaseError as any)?.code;
+        
+        console.error('[AuthContext] Login error code:', errorCode, 'Error:', firebaseError);
         
         if (firebaseError instanceof Error) {
-          const errorCode = (firebaseError as any).code;
           
           switch (errorCode) {
             case 'auth/user-not-found':
@@ -188,6 +239,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         }
         
+        console.error('[AuthContext] Final error message:', errorMessage);
         throw new Error(errorMessage);
       }
     } finally {

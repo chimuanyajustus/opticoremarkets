@@ -93,20 +93,30 @@ export const createUserRecord = async (
   fullName: string,
   email: string
 ): Promise<void> => {
-  const userRef = doc(usersCollection, uid);
-  await setDoc(userRef, {
-    uid,
-    fullName,
-    email,
-    role: 'user',
-    status: 'pending',
-    balance: 0,
-    totalReturns: 0,
-    emailVerified: false,
-    verificationStatus: 'pending',
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
+  try {
+    console.log('[firestoreService] createUserRecord: Creating user document for UID:', uid, 'Email:', email);
+    const userRef = doc(usersCollection, uid);
+    await setDoc(userRef, {
+      uid,
+      fullName,
+      email,
+      role: 'user',
+      status: 'pending',
+      balance: 0,
+      totalReturns: 0,
+      emailVerified: false,
+      verificationStatus: 'pending',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    console.log('[firestoreService] createUserRecord: User document created successfully');
+  } catch (error) {
+    console.error('[firestoreService] createUserRecord: Error creating user document:', error);
+    if (error instanceof Error) {
+      console.error('[firestoreService] createUserRecord: Error details:', error.message);
+    }
+    throw error;
+  }
 };
 
 export const updateUserStatus = async (uid: string, status: UserStatus): Promise<void> => {
@@ -552,11 +562,21 @@ export const rejectWithdrawalRequest = async (requestId: string, userId?: string
 };
 
 export const updateUserRole = async (uid: string, role: 'user' | 'admin'): Promise<void> => {
-  const userRef = doc(usersCollection, uid);
-  await updateDoc(userRef, {
-    role,
-    updatedAt: serverTimestamp(),
-  });
+  try {
+    console.log('[firestoreService] updateUserRole: Updating role for UID:', uid, 'to:', role);
+    const userRef = doc(usersCollection, uid);
+    await updateDoc(userRef, {
+      role,
+      updatedAt: serverTimestamp(),
+    });
+    console.log('[firestoreService] updateUserRole: Role updated successfully');
+  } catch (error) {
+    console.error('[firestoreService] updateUserRole: Error updating role:', error);
+    if (error instanceof Error) {
+      console.error('[firestoreService] updateUserRole: Error details:', error.message);
+    }
+    throw error;
+  }
 };
 
 export const approveWithdrawalRequest = async (
@@ -597,7 +617,24 @@ export const onUserSnapshot = (
 };
 
 export const getUserById = async (uid: string) => {
-  const userRef = doc(usersCollection, uid);
-  const snapshot = await getDoc(userRef);
-  return snapshot.exists() ? (snapshot.data() as FirestoreUser) : null;
+  try {
+    console.log('[firestoreService] getUserById: Fetching user document for UID:', uid);
+    const userRef = doc(usersCollection, uid);
+    const snapshot = await getDoc(userRef);
+    
+    if (snapshot.exists()) {
+      const userData = snapshot.data() as FirestoreUser;
+      console.log('[firestoreService] getUserById: User found. Role:', userData.role, 'Email:', userData.email);
+      return userData;
+    } else {
+      console.log('[firestoreService] getUserById: User document does not exist for UID:', uid);
+      return null;
+    }
+  } catch (error) {
+    console.error('[firestoreService] getUserById: Error fetching user:', error);
+    if (error instanceof Error) {
+      console.error('[firestoreService] getUserById: Error details:', error.message);
+    }
+    throw error;
+  }
 };

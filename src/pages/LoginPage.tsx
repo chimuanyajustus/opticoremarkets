@@ -23,10 +23,14 @@ const LoginPage: React.FC = () => {
   });
 
   React.useEffect(() => {
+    console.log('[LoginPage] Auth state changed. User:', user?.email, 'IsAdmin:', isAdmin);
     if (user) {
+      console.log('[LoginPage] User authenticated, redirecting. IsAdmin:', isAdmin);
       if (isAdmin) {
+        console.log('[LoginPage] Redirecting to /admin');
         navigate('/admin', { replace: true });
       } else {
+        console.log('[LoginPage] Redirecting to:', fromPath);
         navigate(fromPath, { replace: true });
       }
     }
@@ -34,6 +38,7 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[LoginPage] Login attempt for:', formData.email);
     setLoading(true);
     setError('');
 
@@ -42,6 +47,7 @@ const LoginPage: React.FC = () => {
       // Navigation will happen in useEffect when user state updates
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Login failed';
+      console.error('[LoginPage] Login error:', message);
       setError(message);
     }
 
