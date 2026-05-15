@@ -138,8 +138,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 md:p-6 overflow-auto">
-          {children}
+        <main className="flex-1 w-full overflow-hidden">
+          <div className="h-full overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6">
+            {children}
+          </div>
         </main>
       </div>
 

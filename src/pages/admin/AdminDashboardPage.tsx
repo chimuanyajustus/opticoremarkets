@@ -175,7 +175,7 @@ const AdminDashboardPage: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8"
+        className="w-full max-w-7xl mx-auto"
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -296,24 +296,24 @@ const AdminDashboardPage: React.FC = () => {
           {recentDeposits.length === 0 ? (
             <div className="text-center text-gray-400 py-4">No deposit requests</div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {recentDeposits.map((deposit) => (
-                <div key={deposit.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-3 sm:p-4 bg-white/5 rounded-lg">
-                  <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+                <div key={deposit.id} className="block p-3 sm:p-4 bg-white/5 rounded-lg overflow-hidden">
+                  <div className="flex items-start gap-3 mb-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
                       {(deposit.asset || 'A')[0]}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-white font-medium truncate text-sm sm:text-base">{deposit.userEmail}</p>
-                      <p className="text-gray-400 text-xs sm:text-sm">{deposit.asset || 'N/A'} • {deposit.amount} {deposit.asset || 'N/A'}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium text-sm sm:text-base break-all">{deposit.userEmail}</p>
+                      <p className="text-gray-400 text-xs sm:text-sm">{deposit.asset || 'N/A'} • {deposit.amount}</p>
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
-                    <div className="text-right">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+                    <div className="flex items-center justify-between sm:flex-row gap-2 sm:gap-4">
                       <p className="text-white font-semibold text-sm sm:text-base">${deposit.amount.toLocaleString()}</p>
                       <span
-                        className={`text-xs px-2 py-1 rounded-full inline-flex items-center gap-1 ${
+                        className={`text-xs px-2 py-1 rounded-full inline-flex items-center gap-1 flex-shrink-0 ${
                           deposit.status === 'approved'
                             ? 'bg-green-500/20 text-green-400'
                             : deposit.status === 'rejected'
@@ -331,13 +331,13 @@ const AdminDashboardPage: React.FC = () => {
                       <div className="flex gap-2 w-full sm:w-auto">
                         <button
                           onClick={() => handleApproveDeposit(deposit)}
-                          className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded whitespace-nowrap"
+                          className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm px-3 py-1 rounded whitespace-nowrap"
                         >
                           Approve
                         </button>
                         <button
                           onClick={() => handleRejectDeposit(deposit.id)}
-                          className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded whitespace-nowrap"
+                          className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm px-3 py-1 rounded whitespace-nowrap"
                         >
                           Reject
                         </button>
@@ -362,27 +362,30 @@ const AdminDashboardPage: React.FC = () => {
           {recentWithdrawals.length === 0 ? (
             <div className="text-center text-gray-400 py-4">No withdrawal requests</div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {recentWithdrawals.map((withdrawal) => (
-                <div key={withdrawal.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-3 sm:p-4 bg-white/5 rounded-lg">
-                  <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+                <div key={withdrawal.id} className="block p-3 sm:p-4 bg-white/5 rounded-lg overflow-hidden">
+                  <div className="flex items-start gap-3 mb-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
                       {(withdrawal.asset || 'W')[0]}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-white font-medium truncate text-sm sm:text-base">{withdrawal.userEmail}</p>
-                      <p className="text-gray-400 text-xs sm:text-sm">{withdrawal.asset || 'N/A'} • {withdrawal.amount} {withdrawal.asset || 'N/A'}</p>
-                      {withdrawal.walletAddress && (
-                        <p className="mt-1 text-xs text-slate-400 break-all">{withdrawal.walletAddress}</p>
-                      )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium text-sm sm:text-base break-all">{withdrawal.userEmail}</p>
+                      <p className="text-gray-400 text-xs sm:text-sm">{withdrawal.asset || 'N/A'} • {withdrawal.amount}</p>
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
-                    <div className="text-right">
+                  {withdrawal.walletAddress && (
+                    <div className="mb-3">
+                      <p className="text-gray-400 text-xs break-all">{withdrawal.walletAddress}</p>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+                    <div className="flex items-center justify-between sm:flex-row gap-2 sm:gap-4">
                       <p className="text-white font-semibold text-sm sm:text-base">${withdrawal.amount.toLocaleString()}</p>
                       <span
-                        className={`text-xs px-2 py-1 rounded-full inline-flex items-center gap-1 ${
+                        className={`text-xs px-2 py-1 rounded-full inline-flex items-center gap-1 flex-shrink-0 ${
                           withdrawal.status === 'approved'
                             ? 'bg-green-500/20 text-green-400'
                             : withdrawal.status === 'rejected'
@@ -400,13 +403,13 @@ const AdminDashboardPage: React.FC = () => {
                       <div className="flex gap-2 w-full sm:w-auto">
                         <button
                           onClick={() => handleApproveWithdrawal(withdrawal)}
-                          className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded whitespace-nowrap"
+                          className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm px-3 py-1 rounded whitespace-nowrap"
                         >
                           Approve
                         </button>
                         <button
                           onClick={() => handleRejectWithdrawal(withdrawal)}
-                          className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded whitespace-nowrap"
+                          className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm px-3 py-1 rounded whitespace-nowrap"
                         >
                           Reject
                         </button>
