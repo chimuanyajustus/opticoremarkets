@@ -4,8 +4,8 @@ import Card from '../components/Card';
 
 const TermsPage: React.FC = () => (
   <MainLayout>
-    <div className="min-vh-screen flex items-center justify-center px-4 py-20">
-      <Card className="max-w-3xl w-full">
+    <div className="min-vh-screen flex items-center justify-center px-4 py-12 sm:py-20">
+      <Card className="max-w-3xl w-full p-6 sm:p-8">
         <h1 className="text-3xl font-semibold text-white mb-4">Terms of Service</h1>
         <p className="text-gray-400 leading-7">
           Read our terms and conditions to understand how Opticore Markets keeps your account safe and connected.

@@ -54,8 +54,8 @@ const AdminSetupPage: React.FC = () => {
   };
 
   return (
-    <div className="min-vh-screen bg-gradient-to-br from-gray-900 to-black p-8">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-vh-screen bg-gradient-to-br from-gray-900 to-black px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+      <div className="max-w-2xl mx-auto px-0 sm:px-2">
         <h1 className="text-4xl font-bold text-white mb-8">Admin Setup (Development Only)</h1>
 
         <div className="space-y-8">

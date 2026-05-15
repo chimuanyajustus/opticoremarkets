@@ -176,7 +176,7 @@ const LandingPage: React.FC = () => {
           
           {/* Animated gradient orbs */}
           <motion.div
-            className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-full filter blur-3xl"
+            className="absolute top-0 left-1/4 w-72 h-72 sm:w-96 sm:h-96 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-full filter blur-3xl"
             animate={{
               y: [0, 50, 0],
               x: [-20, 20, -20],
@@ -184,7 +184,7 @@ const LandingPage: React.FC = () => {
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
-            className="absolute top-1/2 right-1/4 w-80 h-80 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full filter blur-3xl"
+            className="absolute top-1/2 right-1/4 w-64 h-64 sm:w-80 sm:h-80 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full filter blur-3xl"
             animate={{
               y: [0, -40, 0],
               x: [20, -20, 20],
@@ -192,7 +192,7 @@ const LandingPage: React.FC = () => {
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
           />
           <motion.div
-            className="absolute bottom-0 left-1/2 w-96 h-96 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full filter blur-3xl"
+            className="absolute bottom-0 left-1/2 w-72 h-72 sm:w-96 sm:h-96 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full filter blur-3xl"
             animate={{
               y: [0, 40, 0],
               x: [-30, 30, -30],
@@ -305,7 +305,7 @@ const LandingPage: React.FC = () => {
       <section className="py-20 bg-slate-950/70 border-t border-slate-800 relative overflow-hidden">
         {/* Animated background elements */}
         <motion.div
-          className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full filter blur-3xl"
+          className="absolute top-0 right-0 w-64 h-64 sm:w-80 sm:h-80 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full filter blur-3xl"
           animate={{
             y: [0, 40, 0],
             x: [20, -20, 20],
@@ -397,7 +397,7 @@ const LandingPage: React.FC = () => {
       <section className="py-20 bg-slate-950/70 border-t border-slate-800 relative overflow-hidden">
         {/* Animated background elements */}
         <motion.div
-          className="absolute bottom-0 right-1/4 w-96 h-96 bg-gradient-to-tl from-blue-500/20 to-cyan-500/20 rounded-full filter blur-3xl"
+          className="absolute bottom-0 right-1/4 w-72 h-72 sm:w-96 sm:h-96 bg-gradient-to-tl from-blue-500/20 to-cyan-500/20 rounded-full filter blur-3xl"
           animate={{
             y: [0, -40, 0],
             x: [20, -20, 20],

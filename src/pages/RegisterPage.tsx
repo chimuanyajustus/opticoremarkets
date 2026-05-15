@@ -69,13 +69,13 @@ const RegisterPage: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="min-vh-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12 relative overflow-hidden">
+      <div className="min-vh-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative overflow-hidden">
         {/* Animated background elements */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#050610] via-[#0a0e1a] to-[#050610]" />
         
         {/* Animated gradient orbs */}
         <motion.div
-          className="absolute top-1/4 left-0 w-96 h-96 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-full filter blur-3xl"
+          className="absolute top-1/4 left-0 w-72 h-72 sm:w-96 sm:h-96 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-full filter blur-3xl"
           animate={{
             y: [0, 60, 0],
             x: [-50, 50, -50],
@@ -83,7 +83,7 @@ const RegisterPage: React.FC = () => {
           transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute bottom-1/4 right-0 w-80 h-80 bg-gradient-to-l from-blue-500/20 to-cyan-500/20 rounded-full filter blur-3xl"
+          className="absolute bottom-1/4 right-0 w-60 h-60 sm:w-80 sm:h-80 bg-gradient-to-l from-blue-500/20 to-cyan-500/20 rounded-full filter blur-3xl"
           animate={{
             y: [0, -50, 0],
             x: [50, -50, 50],
@@ -95,13 +95,13 @@ const RegisterPage: React.FC = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="max-w-md w-full relative z-10"
+          className="max-w-md w-full relative z-10 mx-auto"
         >
           <Card className="relative overflow-hidden group">
             {/* Animated gradient border effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-pink-500/0 to-purple-500/0 group-hover:from-purple-500/10 group-hover:via-pink-500/10 group-hover:to-purple-500/10 transition-all duration-500" />
             
-            <div className="relative z-10 p-8">
+            <div className="relative z-10 p-5 sm:p-8">
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -117,7 +117,7 @@ const RegisterPage: React.FC = () => {
                 transition={{ delay: 0.3 }}
                 className="text-center mb-8"
               >
-                <h2 className="text-3xl font-bold text-white mb-2">Create your Opticore Markets account</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Create your Opticore Markets account</h2>
                 <p className="text-gray-400">Sign up for secure crypto trading with a modern verification workflow.</p>
               </motion.div>
 
@@ -126,7 +126,7 @@ const RegisterPage: React.FC = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="grid grid-cols-2 gap-4"
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-4"
                 >
                   <Input
                     label="First Name"

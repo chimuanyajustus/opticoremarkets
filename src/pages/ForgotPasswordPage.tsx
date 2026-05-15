@@ -78,13 +78,13 @@ const ForgotPasswordPage: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="min-vh-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden py-20">
+      <div className="min-vh-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12 sm:py-20 relative overflow-hidden">
         {/* Animated background elements */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#050610] via-[#0a0e1a] to-[#050610]" />
         
         {/* Animated gradient orbs */}
         <motion.div
-          className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-500/30 to-purple-500/30 rounded-full filter blur-3xl"
+          className="absolute top-0 right-0 w-72 h-72 sm:w-96 sm:h-96 bg-gradient-to-bl from-blue-500/30 to-purple-500/30 rounded-full filter blur-3xl"
           animate={{
             y: [-50, 50, -50],
             x: [50, -50, 50],
@@ -92,7 +92,7 @@ const ForgotPasswordPage: React.FC = () => {
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute bottom-0 left-1/4 w-80 h-80 bg-gradient-to-tr from-cyan-500/20 to-blue-500/20 rounded-full filter blur-3xl"
+          className="absolute bottom-0 left-1/4 w-64 h-64 sm:w-80 sm:h-80 bg-gradient-to-tr from-cyan-500/20 to-blue-500/20 rounded-full filter blur-3xl"
           animate={{
             y: [50, -50, 50],
             x: [-50, 50, -50],
@@ -110,7 +110,7 @@ const ForgotPasswordPage: React.FC = () => {
             {/* Animated gradient border effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-purple-500/0 to-blue-500/0 group-hover:from-blue-500/10 group-hover:via-purple-500/10 group-hover:to-blue-500/10 transition-all duration-500" />
             
-            <div className="relative z-10 p-8">
+            <div className="relative z-10 p-5 sm:p-8">
               {!isSuccess ? (
                 <>
                   <motion.div
